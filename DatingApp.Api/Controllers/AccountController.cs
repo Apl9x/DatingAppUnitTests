@@ -59,6 +59,7 @@ namespace DatingApp.Api.Controllers
             {
                 if (computedHash[i] != user.PasswordHash[i]) return Unauthorized("Invalid username or password");
             }
+
             return user;
         }
 
