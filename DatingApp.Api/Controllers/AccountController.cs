@@ -1,6 +1,7 @@
 ﻿using DatingApp.Api.Data;
 using DatingApp.Api.DTOs;
 using DatingApp.Api.Entities;
+using DatingApp.Api.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,12 +16,15 @@ namespace DatingApp.Api.Controllers
     public class AccountController : BaseAPIController
     {
         private readonly DataContext _context;
-        public AccountController(DataContext context)
+        private readonly ITokenService _tokenService;
+
+        public AccountController(DataContext context, ITokenService tokenService)
         {
             _context = context;
+            _tokenService = tokenService;
         }
         [HttpPost("register")]
-        public async Task<ActionResult<AppUser>> Register(RegisterDto registerDto)
+        public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
             if (await UserExists(registerDto.Username))
             {
@@ -40,12 +44,16 @@ namespace DatingApp.Api.Controllers
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return user;
+            return new UserDto 
+            { 
+                Username = user.UserName,
+                Token = _tokenService.CreateToken(user)
+            };
         }
 
 
         [HttpPost("login")]
-        public async Task<ActionResult<AppUser>> Login (LoginDto loginDto)
+        public async Task<ActionResult<UserDto>> Login (LoginDto loginDto)
         {
             var user = await _context.Users.SingleOrDefaultAsync(x => x.UserName==loginDto.Username);
             
@@ -60,7 +68,11 @@ namespace DatingApp.Api.Controllers
                 if (computedHash[i] != user.PasswordHash[i]) return Unauthorized("Invalid username or password");
             }
 
-            return user;
+            return new UserDto
+            {
+                Username = user.UserName,
+                Token = _tokenService.CreateToken(user)
+            }; ;
         }
 
         #region Private methods
