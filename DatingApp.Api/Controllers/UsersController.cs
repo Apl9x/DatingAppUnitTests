@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 
 namespace DatingApp.Api.Controllers
 {
-    
-    [ApiController]
+
     [Route("api/[controller]")]
-    public class UsersController : ControllerBase
+    [ApiController]
+    public class UsersController : BaseApiController
     {
         private readonly DataContext _context;
 

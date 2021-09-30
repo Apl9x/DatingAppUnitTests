@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace DatingApp.Api.Controllers
 {
-    public class AccountController : BaseAPIController
+    public class AccountController : BaseApiController
     {
         private readonly DataContext _context;
         private readonly ITokenService _tokenService;
