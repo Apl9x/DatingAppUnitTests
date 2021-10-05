@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatingApp.Api.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20210914130345_InitialCreate")]
+    [Migration("20210914130213_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -17,7 +17,7 @@ namespace DatingApp.Api.Data.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "5.0.9");
 
-            modelBuilder.Entity("DatingApp.Api.Entities.AppUser", b =>
+            modelBuilder.Entity("DatingApp.Entities.AppUser", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
