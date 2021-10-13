@@ -1,10 +1,9 @@
-﻿using DatingApp.Api.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace DatingApp.Api.Entities
+namespace DatingApp.Api.DTOs
 {
-    public class AppUser
+    public class MemberDto
     {
         public int Id { get; set; }
         public string UserName { get; set; }
@@ -33,11 +32,6 @@ namespace DatingApp.Api.Entities
 
         public string Country { get; set; }
 
-        public ICollection<Photo> Photos { get; set; }
-
-        public int GetAge()
-        {
-            return DateOfBirth.CalculateAge();
-        }
+        public ICollection<PhotoDto> Photos { get; set; }
     }
 }
