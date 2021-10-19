@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using DatingApp.Api.DTOs;
-using DatingApp.Api.Entities;
 using DatingApp.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,8 +45,8 @@ namespace DatingApp.Api.Controllers
 
             _userRepository.Update(user);
 
-            if(await _userRepository.SaveAllAsync()) return NoContent();
-            
+            if (await _userRepository.SaveAllAsync()) return NoContent();
+
             return BadRequest("Failed to update the user!");
         }
     }
