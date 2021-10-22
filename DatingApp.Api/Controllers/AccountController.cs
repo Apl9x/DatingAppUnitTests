@@ -1,9 +1,12 @@
-﻿using DatingApp.Api.Data;
+﻿using AutoMapper;
+using DatingApp.Api.Data;
 using DatingApp.Api.DTOs;
 using DatingApp.Api.Entities;
+using DatingApp.Api.Extensions;
 using DatingApp.Api.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,37 +17,38 @@ namespace DatingApp.Api.Controllers
     {
         private readonly DataContext _context;
         private readonly ITokenService _tokenService;
+        private readonly IMapper _mapper;
+        private readonly IUserRepository _userRepository;
 
-        public AccountController(DataContext context, ITokenService tokenService)
+        public AccountController(DataContext context, ITokenService tokenService, IMapper mapper, IUserRepository userRepository)
         {
             _context = context;
             _tokenService = tokenService;
+            _mapper = mapper;
+            _userRepository = userRepository;
         }
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
-            if (await UserExists(registerDto.Username))
-            {
-                return BadRequest("Username is already taken");
-            }
+            if (await UserExists(registerDto.Username)) return BadRequest("Username is already taken");
+
             // Ejecutar el método Dispose de la clase que estoy instanciando
             //HMACSHA512 implementa la interfaz IDisposable
             // Otras clases que implementan IDisposable: todas las que generan conexiones a BD o archivos.
             using var hmac = new HMACSHA512();
+            var user = _mapper.Map<AppUser>(registerDto);
 
-            var user = new AppUser
-            {
-                UserName = registerDto.Username,
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-                PasswordSalt = hmac.Key
-            };
+            user.UserName = registerDto.Username.ToLower();
+            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
+            user.PasswordSalt = hmac.Key;
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return new UserDto
             {
                 Username = user.UserName,
-                Token = _tokenService.CreateToken(user)
+                Token = _tokenService.CreateToken(user),
+                KnownAs = user.KnownAs
             };
         }
 
@@ -52,7 +56,8 @@ namespace DatingApp.Api.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.UserName == loginDto.Username);
+            var user = await _userRepository.GetUserByUsernameAsync(loginDto.Username);
+
 
             if (user == null) return Unauthorized("Invalid login attempt");
 
@@ -68,8 +73,10 @@ namespace DatingApp.Api.Controllers
             return new UserDto
             {
                 Username = user.UserName,
-                Token = _tokenService.CreateToken(user)
-            }; ;
+                Token = _tokenService.CreateToken(user),
+                PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+                KnownAs = user.KnownAs
+            }; 
         }
 
         #region Private methods
