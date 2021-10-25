@@ -80,14 +80,14 @@ namespace DatingApp.Api.Controllers
 
             user.Photos.Add(photo);
 
-            if (await _userRepository.SaveAllAsync()) 
+            if (await _userRepository.SaveAllAsync())
             {
                 return CreatedAtRoute(
-                    "GetUser", 
-                    new { username =  user.UserName}, 
+                    "GetUser",
+                    new { username = user.UserName },
                     _mapper.Map<PhotoDto>(photo));
             }
-            
+
 
             return BadRequest("Problem while uploading the photo");
         }
@@ -108,7 +108,7 @@ namespace DatingApp.Api.Controllers
             photo.IsMain = true;
 
             if (await _userRepository.SaveAllAsync()) return NoContent();
-            
+
 
             return BadRequest("Failed to set main photo");
         }
