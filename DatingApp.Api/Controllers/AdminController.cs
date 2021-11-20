@@ -63,7 +63,7 @@ namespace DatingApp.Api.Controllers
         [HttpGet("photos-to-moderate")]
         public async Task<ActionResult> GetPhotosForModeration()
         {
-            return Ok("ADmins or moderators can see this");
+            return Ok("Admins or moderators can see this");
         }
     }
 }
