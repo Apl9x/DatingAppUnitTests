@@ -16,23 +16,23 @@ using Xunit;
 
 namespace DatingAppUaa.UnitTests.Pruebas
 {
-    public class AdminControllerTests
+    public class BuggyControllerTests
     {
-        private string apiRoute = "api/admin";
+        private string apiRoute = "api/buggy";
         private readonly HttpClient _client;
         private HttpResponseMessage httpResponse;
         private string requestUri;
         private string registeredObject;
         private HttpContent httpContent;
 
-        public AdminControllerTests()
+        public BuggyControllerTests()
         {
             _client = TestHelper.Instance.Client;
         }
 
         [Theory]
-        [InlineData("OK", "admin", "Pa$$w0rd")]
-        public async Task GetUsersWithRoles_ShouldReturnOK(string statusCode, string username, string password)
+        [InlineData("OK", "karen", "Pa$$w0rd")]
+        public async Task GetSecret_ShouldReturnOK(string statusCode, string username, string password)
         {
             // Arrange
             var loginDto = new LoginDto
@@ -49,7 +49,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            requestUri = $"{apiRoute}/users-with-roles";
+            requestUri = $"{apiRoute}/auth";
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
@@ -59,60 +59,13 @@ namespace DatingAppUaa.UnitTests.Pruebas
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
 
-        
-
         [Theory]
-        [InlineData("OK", "admin", "Pa$$w0rd","lisa","Moderator,Member")]
-        public async Task EditRoles_ShouldReturnOK(string statusCode, string username, string password,string user2,string roles)
+        [InlineData("NotFound")]
+        public async Task GetNotFound_ShouldReturnNotFound(string statusCode)
         {
             // Arrange
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            requestUri = $"{apiRoute}/edit-roles/"+user2+"?roles="+roles;
-
-            var data = "roles="+roles;
-
-            // Act
-            httpResponse = await _client.PostAsync(requestUri,httpContent);
-
-            // Assert
-            Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
-            Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
-        }
-
-
-        [Theory]
-        [InlineData("OK", "admin", "Pa$$w0rd")]
-        public async Task GetPhotosForModeration_ShouldReturnOK(string statusCode, string username, string password)
-        {
-            // Arrange
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            requestUri = $"{apiRoute}/photos-to-moderate";
+            
+            requestUri = $"{apiRoute}/not-fund";
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
@@ -122,6 +75,37 @@ namespace DatingAppUaa.UnitTests.Pruebas
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
 
+        [Theory]
+        [InlineData("InternalServerError")]
+        public async Task GetServerError_ShouldReturnNotFound(string statusCode)
+        {
+            // Arrange
+
+            requestUri = $"{apiRoute}/server-error";
+
+            // Act
+            httpResponse = await _client.GetAsync(requestUri);
+
+            // Assert
+            Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
+            Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
+        }
+
+        [Theory]
+        [InlineData("BadRequest")]
+        public async Task GetBadRequest_ShouldReturnBadRequest(string statusCode)
+        {
+            // Arrange
+
+            requestUri = $"{apiRoute}/bad-request";
+
+            // Act
+            httpResponse = await _client.GetAsync(requestUri);
+
+            // Assert
+            Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
+            Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
+        }
 
         #region Privated methods
         private static string GetRegisterObject(LoginDto loginDto)
