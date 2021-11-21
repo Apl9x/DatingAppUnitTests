@@ -30,13 +30,17 @@ namespace DatingAppUaa.UnitTests.Pruebas
         public UsersControllerTests()
         {
             _client = TestHelper.Instance.Client;
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         [Theory]
-        [InlineData("OK", "lisa", "Pa$$w0rd")]
-        public async Task GetUsers_ShouldOK(string statusCode, string username, string password)
+        [InlineData("OK", "lois", "Pa$$w0rd")]
+        public async Task GetUsersNoPagination_ShouldOK(string statusCode, string username, string password)
         {
             // Arrange
+            _client.DefaultRequestHeaders.Authorization = null;
+
             var loginDto = new LoginDto
             {
                 Username = username,
@@ -48,24 +52,23 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestUri = $"{apiRoute}";
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
-
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
 
         [Theory]
-        [InlineData("OK", "admin", "Pa$$w0rd")]
-        public async Task GetUserByUsername_ShouldOK(string statusCode, string username, string password)
+        [InlineData("OK", "lois", "Pa$$w0rd",1,10)]
+        public async Task GetUsersWithPagination_ShouldOK(string statusCode, string username, string password, int pageSize, int pageNumber)
         {
             // Arrange
+            _client.DefaultRequestHeaders.Authorization = null;
+
             var loginDto = new LoginDto
             {
                 Username = username,
@@ -77,14 +80,39 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            requestUri = $"{apiRoute}"+ "?pageNumber="+ pageSize + "&pageSize" + pageNumber;
+
+            // Act
+            httpResponse = await _client.GetAsync(requestUri);
+            // Assert
+            Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
+            Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
+        }
+
+        [Theory]
+        [InlineData("OK", "mayo", "Pa$$w0rd")]
+        public async Task GetUserByUsername_ShouldOK(string statusCode, string username, string password)
+        {
+            // Arrange
+            _client.DefaultRequestHeaders.Authorization = null;
+            var loginDto = new LoginDto
+            {
+                Username = username,
+                Password = password
+            };
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             requestUri = $"{apiRoute}/"+username;
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
-
+            
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
@@ -95,6 +123,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
         public async Task UpdateUser_ShouldNoContent(string statusCode, string username, string password,string introduction,string lookingFor,string interests, string city,string country)
         {
             // Arrange
+            _client.DefaultRequestHeaders.Authorization = null;
             var loginDto = new LoginDto
             {
                 Username = username,
@@ -106,9 +135,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var memberUpdateDto = new MemberUpdateDto {
                 Introduction = introduction,
@@ -124,17 +151,17 @@ namespace DatingAppUaa.UnitTests.Pruebas
 
             // Act
             httpResponse = await _client.PutAsync(requestUri,httpContent);
-
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
 
         [Theory]
-        [InlineData("Created", "lisa", "Pa$$w0rd", "a.jpg")]
-        public async Task AddPhoto_ShouldNoContent(string statusCode, string username, string password, string file)
+        [InlineData("Created", "admin", "Pa$$w0rd", "a.jpg")]
+        public async Task AddPhoto_ShouldCreated(string statusCode, string username, string password, string file)
         {
             // Arrange
+            _client.DefaultRequestHeaders.Authorization = null;
             var loginDto = new LoginDto
             {
                 Username = username,
@@ -146,14 +173,13 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             MultipartFormDataContent form = new MultipartFormDataContent();
             HttpContent content = new StringContent(file);
             form.Add(content, file);
             StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            Console.Write(string.Format("args1: {0}", storageFolder));
             StorageFile sampleFile = await storageFolder.GetFileAsync(file);
             var stream = await sampleFile.OpenStreamForReadAsync();
             content = new StreamContent(stream);
@@ -175,10 +201,11 @@ namespace DatingAppUaa.UnitTests.Pruebas
         }
 
         [Theory]
-        [InlineData("NoContent", "lisa", "Pa$$w0rd", "11")]
-        public async Task SetMainPhoto_OK(string statusCode, string username, string password, string id)
+        [InlineData("NoContent", "lisa", "Pa$$w0rd", "b.jpg")]
+        public async Task SetMainPhoto_OK(string statusCode, string username, string password, string file)
         {
             // Arrange
+            _client.DefaultRequestHeaders.Authorization = null;
             var loginDto = new LoginDto
             {
                 Username = username,
@@ -190,17 +217,119 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            
+            MultipartFormDataContent form = new MultipartFormDataContent();
+            HttpContent content = new StringContent(file);
+            form.Add(content, file);
+            StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            Console.Write(string.Format("args1: {0}", storageFolder));
+            StorageFile sampleFile = await storageFolder.GetFileAsync(file);
+            var stream = await sampleFile.OpenStreamForReadAsync();
+            content = new StreamContent(stream);
+            content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+            {
+                Name = "File",
+                FileName = sampleFile.Name
+            };
+            form.Add(content);
+
+            requestUri = $"{apiRoute}" + "/add-photo";
+
+            // Act
+            result = await _client.PostAsync(requestUri, form);
+            var messageJson = await result.Content.ReadAsStringAsync();
+            var message = messageJson.Split(',');
+            var id = message[0].Split("\"")[2].Split(":")[1];
+
+
 
             requestUri = $"{apiRoute}" + "/photos/"+id;
 
             // Act
-            httpResponse = await _client.PutAsync(requestUri, httpContent);
+            httpResponse = await _client.PutAsync(requestUri, null);
+            // Assert
+            Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
+            Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
+        }
 
+        [Theory]
+        [InlineData("OK", "karen", "Pa$$w0rd","c.jpg")]
+        public async Task DeletePhoto_OK(string statusCode, string username, string password,string file)
+        {
+            // Arrange
+            _client.DefaultRequestHeaders.Authorization = null;
+            var loginDto = new LoginDto
+            {
+                Username = username,
+                Password = password
+            };
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            MultipartFormDataContent form = new MultipartFormDataContent();
+            HttpContent content = new StringContent(file);
+            form.Add(content, file);
+            StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            Console.Write(string.Format("args1: {0}", storageFolder));
+            StorageFile sampleFile = await storageFolder.GetFileAsync(file);
+            var stream = await sampleFile.OpenStreamForReadAsync();
+            content = new StreamContent(stream);
+            content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+            {
+                Name = "File",
+                FileName = sampleFile.Name
+            };
+            form.Add(content);
+
+            requestUri = $"{apiRoute}" + "/add-photo";
+
+            // Act
+            result = await _client.PostAsync(requestUri, form);
+            var messageJson = await result.Content.ReadAsStringAsync();
+            var message = messageJson.Split(',');
+            var id = message[0].Split("\"")[2].Split(":")[1];
+
+
+            requestUri = $"{apiRoute}" + "/photos/" + id;
+
+            // Act
+            httpResponse = await _client.DeleteAsync(requestUri);
+            // Assert
+            Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
+            Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
+        }
+
+        [Theory]
+        [InlineData("NotFound", "davis", "Pa$$w0rd", "20")]
+        public async Task DeletePhoto_NotFound(string statusCode, string username, string password, string id)
+        {
+            // Arrange
+            _client.DefaultRequestHeaders.Authorization = null;
+            var loginDto = new LoginDto
+            {
+                Username = username,
+                Password = password
+            };
+            registeredObject = GetRegisterObject(loginDto);
+            httpContent = GetHttpContent(registeredObject);
+            var result = await _client.PostAsync("api/account/login", httpContent);
+            var userJson = await result.Content.ReadAsStringAsync();
+            var user = userJson.Split(',');
+            var token = user[1].Split("\"")[3];
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+
+
+            requestUri = $"{apiRoute}" + "/photos/" + id;
+
+            // Act
+            httpResponse = await _client.DeleteAsync(requestUri);
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());

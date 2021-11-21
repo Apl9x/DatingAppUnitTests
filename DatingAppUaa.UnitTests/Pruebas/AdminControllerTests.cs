@@ -28,6 +28,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         public AdminControllerTests()
         {
             _client = TestHelper.Instance.Client;
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         [Theory]
@@ -46,14 +48,12 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestUri = $"{apiRoute}/users-with-roles";
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
@@ -77,16 +77,14 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestUri = $"{apiRoute}/edit-roles/"+user2+"?roles="+roles;
 
             var data = "roles="+roles;
 
             // Act
             httpResponse = await _client.PostAsync(requestUri,httpContent);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
@@ -109,14 +107,12 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestUri = $"{apiRoute}/photos-to-moderate";
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());

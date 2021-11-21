@@ -25,6 +25,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         public MessagesControllerTests()
         {
             _client = TestHelper.Instance.Client;
+            _client.DefaultRequestHeaders.Accept.Clear();
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
         [Theory]
         [InlineData("BadRequest", "lois", "Pa$$w0rd", "lois","Hola")]
@@ -42,9 +44,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var messageDto = new MessageDto { 
                 RecipientUsername= recipientUsername,
@@ -56,13 +56,13 @@ namespace DatingAppUaa.UnitTests.Pruebas
 
             // Act
             httpResponse = await _client.PostAsync(requestUri, httpContent);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
         [Theory]
-        [InlineData("NotFound", "lois", "Pa$$w0rd", "pedritosola", "Hola")]
+        [InlineData("NotFound", "lisa", "Pa$$w0rd", "pedritosola", "Hola")]
         public async Task CreateMessage_NotFound(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
@@ -77,9 +77,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var messageDto = new MessageDto
             {
@@ -92,13 +90,13 @@ namespace DatingAppUaa.UnitTests.Pruebas
 
             // Act
             httpResponse = await _client.PostAsync(requestUri, httpContent);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
         [Theory]
-        [InlineData("OK", "lois", "Pa$$w0rd", "lisa", "Hola")]
+        [InlineData("OK", "porter", "Pa$$w0rd", "lisa", "Hola")]
         public async Task CreateMessage_OK(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
@@ -113,9 +111,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var messageDto = new MessageDto
             {
@@ -128,14 +124,14 @@ namespace DatingAppUaa.UnitTests.Pruebas
 
             // Act
             httpResponse = await _client.PostAsync(requestUri, httpContent);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
 
         [Theory]
-        [InlineData("OK", "lois", "Pa$$w0rd", "lisa", "Hola")]
+        [InlineData("OK", "todd", "Pa$$w0rd", "ruthie", "Hola")]
         public async Task GetMessagesForUser_OK(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
@@ -150,22 +146,20 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             requestUri = $"{apiRoute}";
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
 
         [Theory]
-        [InlineData("OK", "lois", "Pa$$w0rd", "Outbox")]
+        [InlineData("OK", "skinner", "Pa$$w0rd", "Outbox")]
         public async Task GetMessagesForUserFromQuery_OK(string statusCode, string username, string password, string container)
         {
             // Arrange
@@ -180,22 +174,20 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             requestUri = $"{apiRoute}"+ "?container="+container;
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
 
         [Theory]
-        [InlineData("OK", "lois", "Pa$$w0rd", "lisa")]
+        [InlineData("OK", "ruthie", "Pa$$w0rd", "lisa")]
         public async Task GetMessagesThread_OK(string statusCode, string username, string password, string user2)
         {
             // Arrange
@@ -210,15 +202,13 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             requestUri = $"{apiRoute}/thread/" + user2;
 
             // Act
             httpResponse = await _client.GetAsync(requestUri);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
@@ -226,7 +216,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
 
 
         [Theory]
-        [InlineData("OK", "lois", "Pa$$w0rd", "lisa", "Hola")]
+        [InlineData("OK", "davis", "Pa$$w0rd", "karen", "Hola")]
         public async Task DeleteMessage_OK(string statusCode, string username, string password, string recipientUsername, string content)
         {
             // Arrange
@@ -241,9 +231,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var messageDto = new MessageDto
             {
@@ -261,7 +249,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
 
             // Act
             httpResponse = await _client.DeleteAsync(requestUri);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             loginDto = new LoginDto
             {
                 Username = recipientUsername,
@@ -273,20 +261,18 @@ namespace DatingAppUaa.UnitTests.Pruebas
             userJson = await result.Content.ReadAsStringAsync();
             user = userJson.Split(',');
             token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
             httpResponse = await _client.DeleteAsync(requestUri);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
         }
 
         [Theory]
-        [InlineData("Unauthorized", "lois", "Pa$$w0rd", "lisa", "Hola","todd")]
+        [InlineData("Unauthorized", "mayo", "Pa$$w0rd", "lisa", "Hola", "margo")]
         public async Task DeleteMessage_Unauthorized(string statusCode, string username, string password, string recipientUsername, string content,string unauth)
         {
             // Arrange
@@ -301,9 +287,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             var userJson = await result.Content.ReadAsStringAsync();
             var user = userJson.Split(',');
             var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var messageDto = new MessageDto
             {
@@ -315,6 +299,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             requestUri = $"{apiRoute}";
             result = await _client.PostAsync(requestUri, httpContent);
             var messageJson = await result.Content.ReadAsStringAsync();
+            _client.DefaultRequestHeaders.Authorization = null;
             var message = messageJson.Split(',');
             var id = message[0].Split("\"")[2].Split(":")[1];
             requestUri = $"{apiRoute}/" + id;
@@ -330,13 +315,11 @@ namespace DatingAppUaa.UnitTests.Pruebas
             userJson = await result.Content.ReadAsStringAsync();
             user = userJson.Split(',');
             token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
             httpResponse = await _client.DeleteAsync(requestUri);
-
+            _client.DefaultRequestHeaders.Authorization = null;
             // Assert
             Assert.Equal(Enum.Parse<HttpStatusCode>(statusCode, true), httpResponse.StatusCode);
             Assert.Equal(statusCode, httpResponse.StatusCode.ToString());
