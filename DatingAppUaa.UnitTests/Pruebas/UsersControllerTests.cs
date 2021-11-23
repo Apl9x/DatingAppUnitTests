@@ -41,18 +41,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
             // Arrange
             _client.DefaultRequestHeaders.Authorization = null;
 
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
             requestUri = $"{apiRoute}";
 
             // Act
@@ -69,18 +59,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
             // Arrange
             _client.DefaultRequestHeaders.Authorization = null;
 
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
             requestUri = $"{apiRoute}"+ "?pageNumber="+ pageSize + "&pageSize" + pageNumber;
 
             // Act
@@ -95,19 +75,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         public async Task GetUserByUsername_ShouldOK(string statusCode, string username, string password)
         {
             // Arrange
-            _client.DefaultRequestHeaders.Authorization = null;
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
             requestUri = $"{apiRoute}/"+username;
 
             // Act
@@ -124,18 +93,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         {
             // Arrange
             _client.DefaultRequestHeaders.Authorization = null;
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
 
             var memberUpdateDto = new MemberUpdateDto {
                 Introduction = introduction,
@@ -162,18 +121,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         {
             // Arrange
             _client.DefaultRequestHeaders.Authorization = null;
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
 
             MultipartFormDataContent form = new MultipartFormDataContent();
             HttpContent content = new StringContent(file);
@@ -206,18 +155,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         {
             // Arrange
             _client.DefaultRequestHeaders.Authorization = null;
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
 
             MultipartFormDataContent form = new MultipartFormDataContent();
             HttpContent content = new StringContent(file);
@@ -237,7 +176,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             requestUri = $"{apiRoute}" + "/add-photo";
 
             // Act
-            result = await _client.PostAsync(requestUri, form);
+            var result = await _client.PostAsync(requestUri, form);
             var messageJson = await result.Content.ReadAsStringAsync();
             var message = messageJson.Split(',');
             var id = message[0].Split("\"")[2].Split(":")[1];
@@ -258,19 +197,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         public async Task DeletePhoto_OK(string statusCode, string username, string password,string file)
         {
             // Arrange
-            _client.DefaultRequestHeaders.Authorization = null;
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
 
             MultipartFormDataContent form = new MultipartFormDataContent();
             HttpContent content = new StringContent(file);
@@ -290,7 +218,7 @@ namespace DatingAppUaa.UnitTests.Pruebas
             requestUri = $"{apiRoute}" + "/add-photo";
 
             // Act
-            result = await _client.PostAsync(requestUri, form);
+            var result = await _client.PostAsync(requestUri, form);
             var messageJson = await result.Content.ReadAsStringAsync();
             var message = messageJson.Split(',');
             var id = message[0].Split("\"")[2].Split(":")[1];
@@ -311,18 +239,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         {
             // Arrange
             _client.DefaultRequestHeaders.Authorization = null;
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
 
 
 
@@ -336,15 +254,6 @@ namespace DatingAppUaa.UnitTests.Pruebas
         }
 
         #region Privated methods
-        private static string GetRegisterObject(LoginDto loginDto)
-        {
-            var entityObject = new JObject()
-            {
-                { nameof(loginDto.Username), loginDto.Username },
-                { nameof(loginDto.Password), loginDto.Password }
-            };
-            return entityObject.ToString();
-        }
         private static string GetRegisterObject(MemberUpdateDto memberUpdateDto)
         {
             var entityObject = new JObject()

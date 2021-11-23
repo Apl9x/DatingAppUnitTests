@@ -28,8 +28,6 @@ namespace DatingAppUaa.UnitTests.Pruebas
         public BuggyControllerTests()
         {
             _client = TestHelper.Instance.Client;
-            _client.DefaultRequestHeaders.Accept.Clear();
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         [Theory]
@@ -37,18 +35,8 @@ namespace DatingAppUaa.UnitTests.Pruebas
         public async Task GetSecret_ShouldReturnOK(string statusCode, string username, string password)
         {
             // Arrange
-            var loginDto = new LoginDto
-            {
-                Username = username,
-                Password = password
-            };
-            registeredObject = GetRegisterObject(loginDto);
-            httpContent = GetHttpContent(registeredObject);
-            var result = await _client.PostAsync("api/account/login", httpContent);
-            var userJson = await result.Content.ReadAsStringAsync();
-            var user = userJson.Split(',');
-            var token = user[1].Split("\"")[3];
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var user = await LoginHelper.LoginUser(username, password);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
             requestUri = $"{apiRoute}/auth";
 
             // Act
@@ -108,15 +96,6 @@ namespace DatingAppUaa.UnitTests.Pruebas
         }
 
         #region Privated methods
-        private static string GetRegisterObject(LoginDto loginDto)
-        {
-            var entityObject = new JObject()
-            {
-                { nameof(loginDto.Username), loginDto.Username },
-                { nameof(loginDto.Password), loginDto.Password }
-            };
-            return entityObject.ToString();
-        }
         private static string GetRegisterObject(string roles)
         {
             var entityObject = new JObject()
